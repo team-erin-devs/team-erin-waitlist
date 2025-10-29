@@ -1,65 +1,128 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import { Urbanist } from 'next/font/google';
+import Image from 'next/image';
+
+const urbanist = Urbanist({ subsets: ['latin'] });
 
 export default function Home() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [message, setMessage] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage('');
+
+    try {
+      const res = await fetch('/api/addToWaitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && !data.error) {
+        setSubmitted(true);
+        setMessage('Signup successful!');
+        setName('');
+        setEmail('');
+      } else {
+        setMessage(
+          data.error || 'Error submitting. Please contact @plotd.app on Instagram.'
+        );
+      }
+    } catch (err) {
+      console.error('Error:', err);
+      setMessage('Network error — contact @plotd.app on Instagram.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main
+      className={`${urbanist.className} min-h-screen bg-black flex items-center justify-center px-6`}
+    >
+      <div className="w-full max-w-xs flex flex-col items-center">
+        {/* Logo */}
+        <div className="mb-6 w-60 sm:w-72 md:w-80 ml-10">
+          <Image
+            src="/plotd.png"
+            alt="Plotd"
+            width={320}
+            height={160}
+            priority
+            className="w-full h-auto"
+          />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+
+        {/* Tagline */}
+        <p className="text-white text-3xl mb-10 tracking-wide font-light text-center">
+          *do it for the plot
+        </p>
+
+        {/* Form */}
+        <form
+          onSubmit={handleSubmit}
+          className="w-full flex flex-col items-center space-y-2"
+        >
+          {/* Name Input */}
+          <div className="w-full flex justify-center">
+            <input
+              name="name"
+              type="text"
+              placeholder="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-3/4 bg-transparent border-b border-gray-600 text-white placeholder-gray-400 py-2 px-0 focus:outline-none focus:border-white transition-colors text-sm"
+              required
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+          </div>
+
+          {/* Email Input */}
+          <div className="w-full flex justify-center">
+            <input
+              name="email"
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-3/4 bg-transparent border-b border-gray-600 text-white placeholder-gray-400 py-2 px-0 focus:outline-none focus:border-white transition-colors text-sm"
+              required
+            />
+          </div>
+
+          {/* Submit Button */}
+          {!submitted && (
+            <div className="w-full flex justify-center pt-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-4/5 bg-white text-black py-2.5 rounded-xl text-sm font-normal transition-all duration-300 hover:bg-black hover:text-white hover:outline hover:outline-2 hover:outline-white disabled:opacity-60"
+              >
+                {loading ? 'Submitting…' : 'Join the plot.'}
+              </button>
+            </div>
+          )}
+
+          {/* Message (success or error) */}
+          {message && (
+            <p
+              className={`text-center mt-2 ${
+                submitted ? 'text-white' : 'text-red-400'
+              }`}
+            >
+              {message}
+            </p>
+          )}
+        </form>
+      </div>
+    </main>
   );
 }
