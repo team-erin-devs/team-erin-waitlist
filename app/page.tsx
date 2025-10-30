@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Urbanist } from 'next/font/google';
 import Image from 'next/image';
 
@@ -12,6 +12,16 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [message, setMessage] = useState('');
+
+  // Prevent scrolling entirely
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -47,9 +57,9 @@ export default function Home() {
 
   return (
     <main
-      className={`${urbanist.className} min-h-screen bg-black flex items-center justify-center px-6`}
+      className={`${urbanist.className} h-screen w-screen bg-black flex items-center justify-center overflow-hidden`}
     >
-      <div className="w-full max-w-xs flex flex-col items-center">
+      <div className="flex flex-col items-center w-full max-w-xs sm:max-w-sm">
         {/* Logo */}
         <div className="mb-6 w-60 sm:w-72 md:w-80 ml-10">
           <Image
@@ -72,7 +82,6 @@ export default function Home() {
           onSubmit={handleSubmit}
           className="w-full flex flex-col items-center space-y-2"
         >
-          {/* Name Input */}
           <div className="w-full flex justify-center">
             <input
               name="name"
@@ -85,7 +94,6 @@ export default function Home() {
             />
           </div>
 
-          {/* Email Input */}
           <div className="w-full flex justify-center">
             <input
               name="email"
@@ -98,7 +106,6 @@ export default function Home() {
             />
           </div>
 
-          {/* Submit Button */}
           {!submitted && (
             <div className="w-full flex justify-center pt-4">
               <button
@@ -111,7 +118,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Message (success or error) */}
           {message && (
             <p
               className={`text-center mt-2 ${
