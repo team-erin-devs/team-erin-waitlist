@@ -9,7 +9,7 @@ export async function POST(req) {
 
   if (!name || !email) {
     return new Response(
-      JSON.stringify({ error: "Name and email required" }),
+      JSON.stringify({ error: "Name and email are required" }),
       { status: 400 }
     );
   }
@@ -25,12 +25,15 @@ export async function POST(req) {
       { headers: { "Content-Type": "application/json" } }
     );
 
-    const accessToken = loginRes.data.tokens.access;
+  const accessToken = loginRes.data.access_token;
 
     if (!accessToken) {
-      console.error("No access token returned from Django login");
+      console.error("No access token returned from Django login:", loginRes.data);
       return new Response(
-        JSON.stringify({ error: "Failed to get access token" }),
+        JSON.stringify({
+          error: "Failed to get access token from Django",
+          details: loginRes.data,
+        }),
         { status: 500 }
       );
     }
@@ -56,10 +59,19 @@ export async function POST(req) {
       { status: 200 }
     );
   } catch (err) {
-    console.error("Error submitting waitlist:", err.response?.data || err.message);
+    // Detailed error reporting
+    const status = err.response?.status || 500;
+    const data = err.response?.data || err.message;
+
+    console.error("Error submitting waitlist:", status, data);
+
     return new Response(
-      JSON.stringify({ error: "Failed to submit waitlist entry" }),
-      { status: 500 }
+      JSON.stringify({
+        error: "Failed to submit waitlist entry",
+        status,
+        details: data,
+      }),
+      { status }
     );
   }
 }
